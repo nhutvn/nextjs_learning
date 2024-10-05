@@ -5,7 +5,7 @@ export default function RegisterPage() {
 	return (
 		<div>
 			<div className='max-w-[400px] mx-auto'>
-				<div className='text-3xl font-semibold'>Register form</div>
+				<div className='text-3xl font-semibold'>Register page</div>
 				<div className='mt-5'>
 					<RegisterForm />
 				</div>
