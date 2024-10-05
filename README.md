@@ -1,1 +1,1 @@
-# nextjs_learning
+This is project study nextjs
