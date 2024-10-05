@@ -1,10 +1,5 @@
-import { ModeToggle } from '@/components/mode-theme-toggle';
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-	return (
-		<div>
-			<ModeToggle />
-			Home Page
-		</div>
-	);
+	return redirect('/login');
 }
