@@ -4,6 +4,8 @@ import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import Header from '@/components/Header';
 import { Toaster } from '@/components/ui/toaster';
+import AppProvider from '@/app/context/app-provider';
+import { cookies } from 'next/headers';
 
 const inter = Inter({ subsets: ['vietnamese'] });
 
@@ -17,6 +19,9 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const cookiesStore = cookies();
+	const sessionToken = cookiesStore.get('sessionToken');
+
 	return (
 		<html
 			lang='en'
@@ -28,7 +33,9 @@ export default function RootLayout({
 					enableSystem
 					disableTransitionOnChange>
 					<Header />
-					{children}
+					<AppProvider initSessionToken={sessionToken?.value ?? ''}>
+						{children}
+					</AppProvider>
 				</ThemeProvider>
 				<Toaster />
 			</body>

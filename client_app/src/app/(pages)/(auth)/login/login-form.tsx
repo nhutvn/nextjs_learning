@@ -15,10 +15,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { LoginBody, LoginBodyType } from '@/schemaValidations/auth.schema';
 import { useToast } from '@/hooks/use-toast';
+import { useAppContext } from '@/app/context/app-provider';
 import envConfig from '@/utils/config';
 
 export default function LoginForm() {
 	const { toast } = useToast();
+	const { setSessionToken } = useAppContext();
 
 	// 1. Define your form.
 	const form = useForm<LoginBodyType>({
@@ -38,19 +40,30 @@ export default function LoginForm() {
 			},
 			method: 'POST',
 		});
-		console.log(result.ok);
-		toast(
-			result.ok
-				? {
-						description: 'Login success',
-				  }
-				: {
-						title: 'Login fail',
-						description: 'Wrong email or password ! Please check ',
-						variant: 'destructive',
-						duration: 2000,
-				  },
-		);
+		const resData = await result.json();
+		if (result.ok) {
+			// call api server set cookie for next server
+			await fetch(`/api/auth`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(resData),
+			});
+
+			// set context save token for next client
+			setSessionToken(resData.data.token);
+			toast({
+				description: 'Login success',
+			});
+		} else {
+			toast({
+				title: 'Login fail',
+				description: 'Wrong email or password ! Please check ',
+				variant: 'destructive',
+				duration: 2000,
+			});
+		}
 	}
 
 	return (
