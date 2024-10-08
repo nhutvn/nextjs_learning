@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextRequest } from 'next/server';
 
-const privatePath = ['/me'];
+const privatePath = ['/account/me'];
 const authPath = ['/login', 'register'];
 
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
-	console.log(request.nextUrl.pathname);
 	const { pathname } = request.nextUrl;
 	const sessionToken = request.cookies.get('sessionToken')?.value;
 	if (privatePath.some((path) => pathname.startsWith(path)) && !sessionToken) {
@@ -21,5 +20,5 @@ export function middleware(request: NextRequest) {
 
 // See "Matching Paths" below to learn more
 export const config = {
-	matcher: ['/login', '/register', '/me'],
+	matcher: ['/login', '/register', '/account/me'],
 };

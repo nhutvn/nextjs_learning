@@ -15,12 +15,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { LoginBody, LoginBodyType } from '@/schemaValidations/auth.schema';
 import { useToast } from '@/hooks/use-toast';
-import { useAppContext } from '@/app/context/app-provider';
-import envConfig from '@/utils/config';
+import authApiRequest from '@/apiRequests/auth';
+import { useRouter } from 'next/navigation';
 
 export default function LoginForm() {
 	const { toast } = useToast();
-	const { setSessionToken } = useAppContext();
+	const router = useRouter();
 
 	// 1. Define your form.
 	const form = useForm<LoginBodyType>({
@@ -33,30 +33,18 @@ export default function LoginForm() {
 
 	// 2. Define a submit handler.
 	async function onSubmit(values: LoginBodyType) {
-		const result = await fetch(`${envConfig.NEXT_PUBLIC_API_ENDPOINT}/auth/login`, {
-			body: JSON.stringify(values),
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			method: 'POST',
-		});
-		const resData = await result.json();
-		if (result.ok) {
-			// call api server set cookie for next server
-			await fetch(`/api/auth`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify(resData),
-			});
-
-			// set context save token for next client
-			setSessionToken(resData.data.token);
-			toast({
-				description: 'Login success',
-			});
-		} else {
+		try {
+			const resData = await authApiRequest.login(values);
+			if (resData) {
+				// call api server set cookie for next server
+				// set context save token for next client => improve in http file
+				await authApiRequest.auth({ sessionToken: resData.payload.data.token });
+				toast({
+					description: 'Login success',
+				});
+				router.push('/account/me');
+			}
+		} catch {
 			toast({
 				title: 'Login fail',
 				description: 'Wrong email or password ! Please check ',

@@ -1,6 +1,6 @@
 export async function POST(request: Request) {
 	const res = await request.json();
-	const sessionToken = res.data.token;
+	const sessionToken = res.sessionToken;
 	console.log('sesstion token is:', sessionToken);
 
 	if (!sessionToken) {

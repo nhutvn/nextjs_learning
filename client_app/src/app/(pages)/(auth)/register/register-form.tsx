@@ -14,9 +14,14 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { RegisterBody, RegisterBodyType } from '@/schemaValidations/auth.schema';
-import envConfig from '@/utils/config';
+import authApiRequest from '@/apiRequests/auth';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 export default function RegisterForm() {
+	const { toast } = useToast();
+	const router = useRouter();
+
 	// 1. Define your form.
 	const form = useForm<RegisterBodyType>({
 		resolver: zodResolver(RegisterBody),
@@ -30,15 +35,18 @@ export default function RegisterForm() {
 
 	// 2. Define a submit handler.
 	async function onSubmit(values: RegisterBodyType) {
-		console.log(values);
-		const result = await fetch(`${envConfig.NEXT_PUBLIC_API_ENDPOINT}/auth/register`, {
-			body: JSON.stringify(values),
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			method: 'POST',
-		}).then((res) => res.json());
-		console.log(result);
+		const result = await authApiRequest.register(values);
+		if (!result.payload.data) {
+			toast({
+				title: 'Register account fail',
+			});
+		} else {
+			toast({
+				title: 'Register account success',
+			});
+			await authApiRequest.auth({ sessionToken: result.payload.data.token });
+			router.push('/account/me');
+		}
 	}
 
 	return (
