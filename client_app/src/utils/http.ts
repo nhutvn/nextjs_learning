@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { nomalizerPath } from '@/lib/utils';
 import { LoginResType } from '@/schemaValidations/auth.schema';
 import envConfig from '@/utils/config';
 type CustomOptions = Omit<RequestInit, 'method'> & {
@@ -59,10 +60,14 @@ const request = async <Response>(
 	if (!res.ok) {
 		throw new HttpError(data);
 	}
-	if (['/auth/login', '/auth/register'].includes(url)) {
-		clientSessionToken.value = (payload as LoginResType).data.token;
-	} else if ('/auth/logout'.includes(url)) {
-		clientSessionToken.value = '';
+
+	// only in client
+	if (typeof window != 'undefined') {
+		if (['auth/login', 'auth/register'].some((path) => path === nomalizerPath(url))) {
+			clientSessionToken.value = (payload as LoginResType).data.token;
+		} else if ('auth/logout' === nomalizerPath(url)) {
+			clientSessionToken.value = '';
+		}
 	}
 	return data;
 };

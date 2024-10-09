@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation';
 export default function RegisterForm() {
 	const { toast } = useToast();
 	const router = useRouter();
+	const [loading, setLoading] = useState(false);
 
 	// 1. Define your form.
 	const form = useForm<RegisterBodyType>({
@@ -35,17 +36,23 @@ export default function RegisterForm() {
 
 	// 2. Define a submit handler.
 	async function onSubmit(values: RegisterBodyType) {
-		const result = await authApiRequest.register(values);
-		if (!result.payload.data) {
-			toast({
-				title: 'Register account fail',
-			});
-		} else {
-			toast({
-				title: 'Register account success',
-			});
-			await authApiRequest.auth({ sessionToken: result.payload.data.token });
-			router.push('/account/me');
+		try {
+			if (loading) return;
+			setLoading(true);
+			const result = await authApiRequest.register(values);
+			if (!result.payload.data) {
+				toast({
+					title: 'Register account fail',
+				});
+			} else {
+				toast({
+					title: 'Register account success',
+				});
+				await authApiRequest.auth({ sessionToken: result.payload.data.token });
+				router.push('/account/me');
+			}
+		} finally {
+			setLoading(false);
 		}
 	}
 

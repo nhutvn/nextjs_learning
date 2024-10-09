@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation';
 export default function LoginForm() {
 	const { toast } = useToast();
 	const router = useRouter();
+	const [loading, setLoading] = useState(false);
 
 	// 1. Define your form.
 	const form = useForm<LoginBodyType>({
@@ -34,6 +35,8 @@ export default function LoginForm() {
 	// 2. Define a submit handler.
 	async function onSubmit(values: LoginBodyType) {
 		try {
+			if (loading) return;
+			setLoading(true);
 			const resData = await authApiRequest.login(values);
 			if (resData) {
 				// call api server set cookie for next server
@@ -51,6 +54,8 @@ export default function LoginForm() {
 				variant: 'destructive',
 				duration: 2000,
 			});
+		} finally {
+			setLoading(true);
 		}
 	}
 
